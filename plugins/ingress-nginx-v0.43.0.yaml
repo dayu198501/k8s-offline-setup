@@ -277,11 +277,11 @@ spec:
     - name: http
       port: 80
       protocol: TCP
-      targetPort: 80 #http
+      targetPort: http
     - name: https
       port: 443
       protocol: TCP
-      targetPort: 443 #https
+      targetPort: https
   selector:
     app.kubernetes.io/name: ingress-nginx
     app.kubernetes.io/instance: ingress-nginx
@@ -290,7 +290,6 @@ spec:
 # Source: ingress-nginx/templates/controller-deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
-# kind: DaemonSet
 metadata:
   labels:
     helm.sh/chart: ingress-nginx-3.21.0
@@ -315,9 +314,11 @@ spec:
         app.kubernetes.io/name: ingress-nginx
         app.kubernetes.io/instance: ingress-nginx
         app.kubernetes.io/component: controller
+      annotations:
+        prometheus.io/port: "10254"
+        prometheus.io/scrape: "true"
     spec:
       dnsPolicy: ClusterFirst
-      hostNetwork: true
       containers:
         - name: controller
           image: 172.16.101.49:5000/ingress-nginx-controller:v0.43.0
@@ -378,11 +379,9 @@ spec:
             - name: http
               containerPort: 80
               protocol: TCP
-              hostPort: 80
             - name: https
               containerPort: 443
               protocol: TCP
-              hostPort: 443
             - name: webhook
               containerPort: 8443
               protocol: TCP
