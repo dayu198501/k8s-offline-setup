@@ -30,7 +30,8 @@ EOF
 
 # kubeadm init
 # 根据您服务器网速的情况，您需要等候 3 - 10 分钟
-kubeadm init --config=kubeadm-config.yaml --upload-certs
+# kubeadm init --config=kubeadm-config.yaml --upload-certs
+kubeadm init --config=kubeadm.yml --upload-certs | tee kubeadm-init.log
 
 # 配置 kubectl
 rm -rf /root/.kube/
@@ -44,17 +45,19 @@ rm -f calico.yaml
 cp ../plugins/calico-v3.10.3.yaml ./calico.yaml
 sed -i "s#192\.168\.0\.0/16#${POD_SUBNET}#" calico.yaml
 kubectl apply -f calico.yaml
+kubectl apply -f ../plugins/calico-v3.17.2.yaml
 
 # 安装 nginx ingress controll
 echo "安装nginx ingress controll"
-kubectl apply -f ../plugins/ingress-nginx-v0.29.0.yaml
+# kubectl apply -f ../plugins/ingress-nginx-v0.29.0.yaml
+kubectl apply -f ../plugins/ingress-nginx-v0.43.0.yaml
 
 # 安装 Dashboard
 echo "安装 Dashboard"
 kubectl apply -f ../plugins/dashboard-auth.yaml
-kubectl apply -f ../plugins/dashboard-v2.0.0-rc5.yaml
+kubectl apply -f ../plugins/dashboard-v2.1.0.yaml
 
 # 安装 Kuboard
 echo "安装 Kuboard"
 kubectl apply -f ../plugins/kuboard.yaml
-kubectl apply -f ../plugins/metrics-server-v0.3.6.yaml
+kubectl apply -f ../plugins/metrics-server-v0.3.7.yaml
