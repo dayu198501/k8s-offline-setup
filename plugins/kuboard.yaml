@@ -26,7 +26,7 @@ spec:
       containers:
       - name: kuboard
         image: 172.16.101.49:5000/kuboard:latest
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
       tolerations:
       - key: node-role.kubernetes.io/master
         effect: NoSchedule
@@ -48,7 +48,6 @@ spec:
   selector:
     k8s.kuboard.cn/layer: monitor
     k8s.kuboard.cn/name: kuboard
-    nginx: nginx
 
 ---
 apiVersion: v1
