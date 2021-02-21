@@ -24,13 +24,13 @@ spec:
         k8s.kuboard.cn/name: kuboard
     spec:
       containers:
-      - name: kuboard
-        image: 172.16.101.49:5000/kuboard:latest
-        imagePullPolicy: IfNotPresent
+        - name: kuboard
+          image: 172.16.101.49:5000/kuboard:latest
+          imagePullPolicy: IfNotPresent
       tolerations:
-      - key: node-role.kubernetes.io/master
-        effect: NoSchedule
-        operator: Exists
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
+          operator: Exists
 
 ---
 apiVersion: v1
@@ -41,10 +41,10 @@ metadata:
 spec:
   type: NodePort
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
-    nodePort: 32567
+    - name: http
+      port: 80
+      targetPort: 80
+      nodePort: 32567
   selector:
     k8s.kuboard.cn/layer: monitor
     k8s.kuboard.cn/name: kuboard
@@ -66,9 +66,9 @@ roleRef:
   kind: ClusterRole
   name: cluster-admin
 subjects:
-- kind: ServiceAccount
-  name: kuboard-user
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: kuboard-user
+    namespace: kube-system
 
 ---
 apiVersion: v1
@@ -87,9 +87,9 @@ roleRef:
   kind: ClusterRole
   name: view
 subjects:
-- kind: ServiceAccount
-  name: kuboard-viewer
-  namespace: kube-system
+  - kind: ServiceAccount
+    name: kuboard-viewer
+    namespace: kube-system
 
 ---
 apiVersion: networking.k8s.io/v1
