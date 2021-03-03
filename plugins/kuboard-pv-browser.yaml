@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    k8s.kuboard.cn/ingress: 'false'
+    k8s.kuboard.cn/service: none
+    k8s.kuboard.cn/workload: kuboard-pv-browser
+  labels:
+    k8s.kuboard.cn/layer: monitor
+    k8s.kuboard.cn/name: kuboard-pv-browser
+  name: kuboard-pv-browser
+  namespace: default
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      k8s.kuboard.cn/layer: monitor
+      k8s.kuboard.cn/name: kuboard-pv-browser
+  template:
+    metadata:
+      labels:
+        k8s.kuboard.cn/layer: monitor
+        k8s.kuboard.cn/name: kuboard-pv-browser
+    spec:
+      containers:
+        - image: 172.16.101.50:5000/kuboard-pv-browser:v1.0.1
+          imagePullPolicy: IfNotPresent
+          name: delegator
+          volumeMounts:
+            - mountPath: /var/lib/kubelet
+              name: kubelet
+            - mountPath: /run/mount
+              name: mounts
+        - command:
+            - sleep
+            - '360000'
+          image: 172.16.101.50:5000/kuboard-pv-browser:v1.0.1
+          imagePullPolicy: IfNotPresent
+          name: pv-browser
+          volumeMounts:
+            - mountPath: /var/lib/kubelet
+              name: kubelet
+            - mountPath: /run/mount
+              name: mounts
+      dnsPolicy: ClusterFirst
+      tolerations:
+        - effect: ''
+          key: node-role.kubernetes.io/master
+          operator: Exists
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - hostPath:
+            path: /var/lib/kubelet
+            type: DirectoryOrCreate
+          name: kubelet
+        - hostPath:
+            path: /run/mount
+            type: DirectoryOrCreate
+          name: mounts

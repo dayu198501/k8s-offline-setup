@@ -1,0 +1,128 @@
+#apiVersion: v1
+#kind: PersistentVolume
+#metadata:
+#  name: nexus3-data-pv
+#  labels:
+#    app: nexus3-data-pv
+#spec:
+#  capacity:
+#    storage: 20Gi
+#  accessModes:
+#    - ReadWriteOnce
+#  persistentVolumeReclaimPolicy: Recycle
+#  storageClassName: nfs
+#  nfs:
+#    path: /opt/applog/nfs
+#    server: 172.16.101.50
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: nexus3-data-pvc
+  namespace: kube-system
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: nfs50
+  resources:
+    requests:
+      storage: 20Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nexus3
+  namespace: kube-system
+  labels:
+    app: nexus3
+spec:
+  selector:
+    matchLabels:
+      app: nexus3
+  template:
+    metadata:
+      labels:
+        app: nexus3
+    spec:
+      initContainers:
+        - name: volume-mount-hack
+          image: 172.16.101.50:5000/busybox
+          command: ["sh", "-c", "chown -R 200:200 /nexus-data"]
+          volumeMounts:
+            - name: nexus-data
+              mountPath: /nexus-data
+      containers:
+        - image: 172.16.101.50:5000/nexus3:lastest
+          name: nexus3
+          ports:
+            - containerPort: 8081
+              name: nexus3
+            - containerPort: 8083
+              name: docker-host
+            - containerPort: 8082
+              name: docker-group
+          volumeMounts:
+            - name: nexus-data
+              mountPath: /nexus-data
+      volumes:
+        - name: nexus-data
+          persistentVolumeClaim:
+            claimName: nexus3-data-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nexus3
+  namespace: kube-system
+spec:
+  type: ClusterIP
+  ports:
+    - port: 8081
+      targetPort: 8081
+      name: nexus3
+    - port: 8082
+      targetPort: 8082
+      name: docker-group
+    - port: 8083
+      targetPort: 8083
+      name: docker-host
+  selector:
+    app: nexus3
+
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nexus3
+  namespace: kube-system
+  annotations:
+    "kubernetes.io/ingress.class": "nginx"
+    "nginx.ingress.kubernetes.io/client-body-buffer-size": "10M"
+    "nginx.ingress.kubernetes.io/proxy-body-size": "1024m"
+    "nginx.ingress.kubernetes.io/proxy-buffer-size": "32k"
+    "nginx.ingress.kubernetes.io/proxy-buffering": "on"
+spec:
+  rules:
+    - host: nexus.klxedu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nexus3
+                port:
+                  number: 8081
+    - host: docker.klxedu.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nexus3
+                port:
+                  number: 8083

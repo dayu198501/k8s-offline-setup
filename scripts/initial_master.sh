@@ -61,3 +61,13 @@ kubectl apply -f ../plugins/dashboard-v2.1.0.yaml
 echo "安装 Kuboard"
 kubectl apply -f ../plugins/kuboard.yaml
 kubectl apply -f ../plugins/metrics-server-v0.3.7.yaml
+
+kubectl apply -f ../plugins/pv.yaml
+
+# 安装 Nexus
+echo "安装 Nexus"
+kubectl apply -f ../plugins/nexus3.yaml
+
+# 安装 Nexus
+echo "安装 Nexus"
+kubectl apply -f ../plugins/kuboard-pv-browser.yaml
