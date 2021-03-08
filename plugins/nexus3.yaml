@@ -24,7 +24,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: nfs50
+  storageClassName: nfs-storageclass-provisioner
   resources:
     requests:
       storage: 20Gi
